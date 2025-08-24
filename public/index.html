@@ -1,74 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>STOR</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NeoTech Store</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <!-- Navbar -->
   <header class="navbar">
-    <div class="logo">STOR</div>
-    <input type="text" class="search" placeholder="Search for products...">
+    <div class="logo">NeoTech</div>
+    <input class="search" id="searchInput" placeholder="Search products..." />
     <div class="nav-right">
-      <button onclick="openModal('loginModal')">Login</button>
-      <button onclick="openModal('registerModal')">Register</button>
-      <div class="cart">🛒 Cart</div>
+      <button class="btn small" onclick="openModal('loginModal')">Login</button>
+      <button class="btn small" onclick="openModal('registerModal')">Register</button>
+      <button class="btn small" onclick="goCart()">🛒 Cart</button>
     </div>
   </header>
 
-  <!-- Hero -->
   <section class="hero">
-    <h1>Welcome to STOR</h1>
-    <p>Shop smarter, live better.</p>
-    <button onclick="scrollToProducts()">Shop Now</button>
+    <h1>NeoTech Store</h1>
+    <p>Cutting-edge gadgets. Fast delivery. Pay securely.</p>
+    <button class="btn" onclick="scrollToProducts()">Shop Now</button>
   </section>
 
-  <!-- Categories -->
   <nav class="categories">
     <button onclick="filterCategory('all')">All</button>
-    <button onclick="filterCategory('electronics')">Electronics</button>
-    <button onclick="filterCategory('fashion')">Fashion</button>
-    <button onclick="filterCategory('gadgets')">Gadgets</button>
+    <button onclick="filterCategory('Phones')">Phones</button>
+    <button onclick="filterCategory('Computers')">Computers</button>
+    <button onclick="filterCategory('Audio')">Audio</button>
+    <button onclick="filterCategory('Gaming')">Gaming</button>
+    <button onclick="filterCategory('Wearables')">Wearables</button>
   </nav>
 
-  <!-- Products -->
   <main>
     <div class="product-grid"></div>
   </main>
 
-  <!-- Footer -->
   <footer>
-    <p>© 2025 STOR. Built with 💙 in Web3.</p>
+    <div>© <span id="year"></span> NeoTech Store</div>
   </footer>
 
-  <!-- Login Modal -->
+  <!-- LOGIN MODAL -->
   <div id="loginModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeModal('loginModal')">&times;</span>
-      <h2>Login</h2>
+      <h3>Login</h3>
       <form id="loginForm">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Login</button>
+        <input name="email" type="email" placeholder="Email" required />
+        <input name="password" type="password" placeholder="Password" required />
+        <button class="btn" type="submit">Login</button>
       </form>
     </div>
   </div>
 
-  <!-- Register Modal -->
+  <!-- REGISTER MODAL -->
   <div id="registerModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeModal('registerModal')">&times;</span>
-      <h2>Register</h2>
+      <h3>Create account</h3>
       <form id="registerForm">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Register</button>
+        <input name="email" type="email" placeholder="Email" required />
+        <input name="password" type="password" placeholder="Password" required />
+        <button class="btn" type="submit">Register</button>
       </form>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="/js/script.js"></script>
 </body>
 </html>
