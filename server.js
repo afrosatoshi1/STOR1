@@ -4,6 +4,7 @@ const session = require("express-session");
 const bcrypt = require("bcryptjs");
 const sqlite3 = require("sqlite3").verbose();
 const Paystack = require("paystack-api");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
