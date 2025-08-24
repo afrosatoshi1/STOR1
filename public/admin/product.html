@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin — Products</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div style="max-width:1100px;margin:20px auto;padding:12px">
+    <h2>Products</h2>
+    <div style="margin-bottom:14px">
+      <form id="addProductForm">
+        <input name="name" placeholder="Name" required />
+        <input name="price" placeholder="Price (NGN)" required type="number" />
+        <input name="category" placeholder="Category" />
+        <input name="image" placeholder="/img/..." />
+        <input name="description" placeholder="Short description" />
+        <button class="btn" type="submit">Add Product</button>
+      </form>
+    </div>
+    <div id="productList"></div>
+    <p><a href="/admin/index.html">Back to dashboard</a></p>
+  </div>
+
+<script>
+  (async ()=>{
+    const me = await (await fetch('/api/me')).json();
+    if (!me || me.role !== 'admin') return window.location.href = '/admin/login.html';
+
+    async function loadProducts(){
+      const res = await fetch('/api/products');
+      const products = await res.json();
+      const list = document.getElementById('productList');
+      list.innerHTML = products.map(p =>
+        `<div style="padding:8px;border-bottom:1px solid #eee">
+           <strong>${p.name}</strong> — ₦${Number(p.price).toLocaleString()} 
+           <button style="margin-left:8px" onclick="deleteProduct(${p.id})">Delete</button>
+         </div>`
+      ).join('');
+    }
+
+    window.deleteProduct = async (id) => {
+      if (!confirm('Delete product?')) return;
+      await fetch('/api/products/' + id, { method: 'DELETE' });
+      loadProducts();
+    }
+
+    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const body = {
+        name: fd.get('name'),
+        price: Number(fd.get('price')),
+        category: fd.get('category'),
+        image: fd.get('image'),
+        description: fd.get('description'),
+        active: 1
+      };
+      await fetch('/api/products', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      e.target.reset();
+      loadProducts();
+    });
+
+    loadProducts();
+  })();
+</script>
+</body>
+</html>
