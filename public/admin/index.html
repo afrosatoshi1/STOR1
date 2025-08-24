@@ -1,16 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin Dashboard - NeoTech</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <h1>Admin Dashboard</h1>
-  <nav>
-    <a href="/admin/products.html">Manage Products</a> |
-    <a href="/admin/orders.html">View Orders</a> |
-    <a href="/admin/login.html">Logout</a>
-  </nav>
+  <div style="max-width:1100px;margin:24px auto;padding:16px">
+    <h1>Admin Dashboard</h1>
+    <nav style="margin-bottom:12px">
+      <a href="/admin/products.html">Manage Products</a> |
+      <a href="/admin/orders.html">Orders</a> |
+      <a href="#" onclick="logout()">Logout</a>
+    </nav>
+    <div id="adminContent"></div>
+  </div>
+<script>
+  async function logout(){ await fetch('/api/logout'); window.location.href='/'; }
+  // quick check: require admin, else redirect to admin login
+  (async ()=>{
+    const me = await (await fetch('/api/me')).json();
+    if (!me || me.role !== 'admin') window.location.href = '/admin/login.html';
+    else document.getElementById('adminContent').innerHTML = '<p>Welcome, ' + me.email + '</p>';
+  })();
+</script>
 </body>
 </html>
