@@ -124,5 +124,7 @@ app.post("/api/pay", async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+// Admin routes
+app.use('/admin', express.static(path.join(__dirname, 'public/admin')));
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
