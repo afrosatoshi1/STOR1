@@ -1,122 +1,74 @@
-// server.js
 const express = require("express");
 const session = require("express-session");
-const bcrypt = require("bcryptjs");
-const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
 const bodyParser = require("body-parser");
+const sqlite3 = require("sqlite3").verbose();
+const bcrypt = require("bcryptjs");
+const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const db = new sqlite3.Database("./store.db");
 
-// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(
-  session({
-    secret: "neotech_secret",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+app.use(session({
+  secret: "supersecretkey",
+  resave: false,
+  saveUninitialized: true
+}));
 
-// Database
-const db = new sqlite3.Database("./neotech.db", (err) => {
-  if (err) console.error("DB error:", err);
-  else console.log("Connected to DB");
-});
-
-// Tables
+// ✅ Create users & carts table
 db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    email TEXT UNIQUE,
-    password TEXT
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    price REAL,
-    category TEXT,
-    description TEXT
-  )`);
+  db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT)");
+  db.run("CREATE TABLE IF NOT EXISTS carts (id INTEGER PRIMARY KEY, user_id INTEGER, product TEXT, price REAL, qty INTEGER)");
 });
 
-// Routes
-// Home
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
-
-// Admin Panel
-app.get("/admin", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/admin.html"));
-});
-
-// Register
+// ✅ Register
 app.post("/register", (req, res) => {
-  const { username, email, password } = req.body;
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  const { username, password } = req.body;
+  const hashed = bcrypt.hashSync(password, 10);
 
-  db.run(
-    "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-    [username, email, hashedPassword],
-    function (err) {
-      if (err) {
-        console.error(err);
-        return res.status(400).send("User already exists");
-      }
-      res.status(200).send("Registration successful");
-    }
-  );
-});
-
-// Login
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-
-  db.get("SELECT * FROM users WHERE email = ?", [email], (err, user) => {
-    if (err || !user) return res.status(400).send("Invalid email or password");
-
-    if (bcrypt.compareSync(password, user.password)) {
-      req.session.user = { id: user.id, username: user.username };
-      res.status(200).send("Login successful");
-    } else {
-      res.status(400).send("Invalid email or password");
-    }
+  db.run("INSERT INTO users (username, password) VALUES (?, ?)", [username, hashed], function(err) {
+    if (err) return res.status(400).json({ error: "Username already taken" });
+    req.session.userId = this.lastID;
+    res.json({ success: true, message: "Registered successfully" });
   });
 });
 
-// Logout
-app.get("/logout", (req, res) => {
-  req.session.destroy();
-  res.redirect("/");
+// ✅ Login
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
+    if (!user) return res.status(400).json({ error: "User not found" });
+    if (!bcrypt.compareSync(password, user.password)) return res.status(400).json({ error: "Invalid password" });
+
+    req.session.userId = user.id;
+    res.json({ success: true, message: "Logged in" });
+  });
 });
 
-// Add product (Admin)
-app.post("/admin/add-product", (req, res) => {
-  const { name, price, category, description } = req.body;
+// ✅ Save cart for logged-in user
+app.post("/cart/save", (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ error: "Login required" });
 
-  db.run(
-    "INSERT INTO products (name, price, category, description) VALUES (?, ?, ?, ?)",
-    [name, price, category, description],
-    function (err) {
-      if (err) return res.status(400).send("Error adding product");
-      res.status(200).send("Product added");
-    }
-  );
+  const { cart } = req.body;
+  db.run("DELETE FROM carts WHERE user_id = ?", [req.session.userId], () => {
+    cart.forEach(item => {
+      db.run("INSERT INTO carts (user_id, product, price, qty) VALUES (?, ?, ?, ?)",
+        [req.session.userId, item.name, item.price, item.qty]);
+    });
+    res.json({ success: true, message: "Cart saved" });
+  });
 });
 
-// Get products (for frontend)
-app.get("/products", (req, res) => {
-  db.all("SELECT * FROM products", [], (err, rows) => {
-    if (err) return res.status(400).send("Error loading products");
+// ✅ Load cart for logged-in user
+app.get("/cart/load", (req, res) => {
+  if (!req.session.userId) return res.json([]);
+  db.all("SELECT product AS name, price, qty FROM carts WHERE user_id = ?", [req.session.userId], (err, rows) => {
     res.json(rows);
   });
 });
 
-app.listen(PORT, () => console.log(`🚀 Running on http://localhost:${PORT}`));
+app.listen(3000, () => console.log("Server running on port 3000"));
