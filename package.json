@@ -1,6 +1,6 @@
 {
   "name": "neotech-store-blue",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "E-commerce store with Paystack integration, user accounts, categories, and AI recommendations.",
   "main": "server.js",
   "scripts": {
@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "express": "^4.19.2",
+    "express-session": "^1.17.3",
     "sqlite3": "^5.1.6",
     "body-parser": "^1.20.2",
     "dotenv": "^16.3.1",
