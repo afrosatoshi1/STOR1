@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin — Orders</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div style="max-width:1100px;margin:20px auto;padding:12px">
+    <h2>Orders</h2>
+    <div id="ordersList"></div>
+    <p><a href="/admin/index.html">Back to dashboard</a></p>
+  </div>
+<script>
+  (async ()=>{
+    const me = await (await fetch('/api/me')).json();
+    if (!me || me.role !== 'admin') return window.location.href = '/admin/login.html';
+
+    async function loadOrders(){
+      const res = await fetch('/api/admin/orders');
+      const orders = await res.json();
+      document.getElementById('ordersList').innerHTML = orders.map(o =>
+        `<div style="padding:8px;border-bottom:1px solid #eee">
+          <strong>Order #${o.id}</strong> — ₦${Number(o.total).toLocaleString()} — ${o.status}
+          <select onchange="updateStatus(${o.id}, this.value)">
+            <option ${o.status==='PENDING'?'selected':''}>PENDING</option>
+            <option ${o.status==='PAID'?'selected':''}>PAID</option>
+            <option ${o.status==='SHIPPED'?'selected':''}>SHIPPED</option>
+            <option ${o.status==='CANCELLED'?'selected':''}>CANCELLED</option>
+          </select>
+        </div>`
+      ).join('');
+    }
+    window.updateStatus = async (id, status) => {
+      await fetch('/api/admin/orders/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status })});
+      loadOrders();
+    }
+    loadOrders();
+  })();
+</script>
+</body>
+</html>
