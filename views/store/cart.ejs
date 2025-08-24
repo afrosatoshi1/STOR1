@@ -1,0 +1,38 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/css/styles.css"/>
+<title>Your Cart - NeoTech</title></head><body>
+<%- include('../partials/header', { user }) %>
+<h1 class="hero">Your Cart</h1>
+<div class="grid" style="grid-template-columns:2fr 1fr">
+  <div class="card">
+    <table class="table">
+      <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+      <% cart.forEach(i => { %>
+        <tr>
+          <td><%= i.name %></td>
+          <td>
+            <form action="/cart/update" method="POST">
+              <input type="hidden" name="id" value="<%= i.id %>"/>
+              <input type="number" name="qty" value="<%= i.qty %>" min="1" style="width:80px"/>
+            </form>
+          </td>
+          <td>₦<%= i.price.toLocaleString() %></td>
+          <td>₦<%= (i.price*i.qty).toLocaleString() %></td>
+        </tr>
+      <% }) %>
+    </table>
+    <div style="margin-top:10px">
+      <a class="btn" href="/cart/clear">Clear Cart</a>
+      <a class="btn" href="/">Continue Shopping</a>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Total</h3>
+    <div class="price">₦<%= total.toLocaleString() %></div>
+    <% if (cart.length) { %>
+      <a class="btn" href="/checkout">Proceed to Checkout</a>
+    <% } %>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/css/styles.css"/><title>Login</title></head><body>
+<%- include('../partials/header', { user }) %>
+<div class="grid"><div class="card">
+  <h2>Login</h2>
+  <% if (error) { %><div class="alert"><%= error %></div><% } %>
+  <form method="POST" action="/login">
+    <label>Email</label><input name="email" type="email" required />
+    <label>Password</label><input name="password" type="password" required />
+    <button class="btn" type="submit" style="margin-top:10px">Login</button>
+  </form>
+</div></div>
+</body></html>

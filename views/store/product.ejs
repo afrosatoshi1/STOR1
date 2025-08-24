@@ -1,0 +1,33 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/css/styles.css"/>
+<title><%= product.name %> - NeoTech</title></head><body>
+<%- include('../partials/header', { user }) %>
+<div class="grid" style="grid-template-columns:1.2fr 1fr">
+  <div class="card"><img src="<%= product.image || '/img/placeholder.png' %>" alt="<%= product.name %>"/></div>
+  <div class="card">
+    <h2><%= product.name %></h2>
+    <div class="price">₦<%= product.price.toLocaleString() %></div>
+    <p class="muted"><%= product.description %></p>
+    <form method="POST" action="/cart/add">
+      <input type="hidden" name="product_id" value="<%= product.id %>"/>
+      <div class="row3" style="margin-top:12px">
+        <input type="number" name="qty" value="1" min="1"/>
+        <button class="btn" type="submit">Add to Cart</button>
+        <a class="btn" href="/checkout">Buy Now</a>
+      </div>
+    </form>
+  </div>
+</div>
+<h1 class="hero">Recommended</h1>
+<div class="grid">
+  <% recs.forEach(p => { %>
+    <div class="card">
+      <img src="<%= p.image || '/img/placeholder.png' %>" alt="<%= p.name %>"/>
+      <h3><%= p.name %></h3>
+      <div class="price">₦<%= p.price.toLocaleString() %></div>
+      <a class="btn" href="/product/<%= p.id %>">View</a>
+    </div>
+  <% }) %>
+</div>
+</body></html>

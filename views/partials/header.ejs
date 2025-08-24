@@ -1,0 +1,15 @@
+<header>
+  <div class="nav">
+    <a class="logo" href="/">NeoTech</a>
+    <a href="/">Home</a>
+    <a href="/cart">Cart</a>
+    <% if (user) { %>
+      <% if (user.role === 'admin') { %><a href="/admin/dashboard">Admin</a><% } %>
+      <span class="badge"><%= user.email %></span>
+      <a href="/logout">Logout</a>
+    <% } else { %>
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+    <% } %>
+  </div>
+</header>

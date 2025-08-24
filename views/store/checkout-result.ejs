@@ -1,0 +1,11 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/css/styles.css"/><title>Payment Result - NeoTech</title></head><body>
+<%- include('../partials/header', { user }) %>
+<div class="grid"><div class="card">
+  <% if (ok) { %>
+    <h2>✅ Payment Successful</h2><p>Reference: <%= ref %></p><a class="btn" href="/">Back to Store</a>
+  <% } else { %>
+    <h2>❌ Payment Failed</h2><p>Please try again.</p><a class="btn" href="/checkout">Try Again</a>
+  <% } %>
+</div></div>
+</body></html>

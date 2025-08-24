@@ -1,0 +1,103 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/css/styles.css"/><title>Admin Dashboard</title></head><body>
+<%- include('../partials/header', { user }) %>
+<h1 class="hero">Admin Dashboard</h1>
+<div class="grid" style="grid-template-columns:1fr 1fr">
+  <div class="card">
+    <h3>Products</h3>
+    <table class="table">
+      <tr><th>Name</th><th>Price</th><th>Cat</th><th>Active</th><th>Actions</th></tr>
+      <% products.forEach(p=>{ %>
+        <tr>
+          <td><%= p.name %></td>
+          <td>₦<%= p.price.toLocaleString() %></td>
+          <td><%= p.category_id %></td>
+          <td><%= p.active ? 'Yes' : 'No' %></td>
+          <td>
+            <form method="POST" action="/admin/products/update/<%= p.id %>">
+              <div class="row">
+                <input name="name" value="<%= p.name %>"/>
+                <input name="price" type="number" value="<%= p.price %>"/>
+                <select name="category_id">
+                  <% categories.forEach(c=>{ %>
+                    <option value="<%= c.id %>" <%= c.id===p.category_id?'selected':'' %>><%= c.name %></option>
+                  <% }) %>
+                </select>
+                <input name="image" value="<%= p.image %>" placeholder="/img/..." />
+                <input name="description" value="<%= p.description %>" />
+                <label><input type="checkbox" name="active" <%= p.active?'checked':'' %> /> Active</label>
+              </div>
+              <button class="btn" type="submit">Save</button>
+              <a class="btn" href="/admin/products/delete/<%= p.id %>">Delete</a>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </table>
+    <h4>Add Product</h4>
+    <form method="POST" action="/admin/products/create">
+      <div class="row">
+        <input name="name" placeholder="Name" required />
+        <input name="price" type="number" placeholder="Price (₦)" required />
+        <select name="category_id">
+          <% categories.forEach(c=>{ %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
+        </select>
+        <input name="image" placeholder="/img/phone.png" />
+        <input name="description" placeholder="Short description" />
+      </div>
+      <button class="btn" type="submit">Add</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Categories</h3>
+    <table class="table">
+      <tr><th>Name</th><th>Actions</th></tr>
+      <% categories.forEach(c=>{ %>
+        <tr>
+          <td><%= c.name %></td>
+          <td>
+            <form method="POST" action="/admin/categories/update/<%= c.id %>">
+              <input name="name" value="<%= c.name %>"/>
+              <button class="btn" type="submit">Save</button>
+              <a class="btn" href="/admin/categories/delete/<%= c.id %>">Delete</a>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </table>
+    <h4>Add Category</h4>
+    <form method="POST" action="/admin/categories/create">
+      <input name="name" placeholder="Category name" required />
+      <button class="btn" type="submit">Add</button>
+    </form>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Recent Orders</h3>
+    <table class="table">
+      <tr><th>ID</th><th>User</th><th>Total</th><th>Status</th><th>Update</th></tr>
+      <% orders.forEach(o=>{ %>
+        <tr>
+          <td>#<%= o.id %></td>
+          <td><%= o.user_id %></td>
+          <td>₦<%= o.total.toLocaleString() %></td>
+          <td><%= o.status %></td>
+          <td>
+            <form method="POST" action="/admin/orders/status/<%= o.id %>">
+              <select name="status">
+                <option <%= o.status==='PENDING'?'selected':'' %>>PENDING</option>
+                <option <%= o.status==='PAID'?'selected':'' %>>PAID</option>
+                <option <%= o.status==='SHIPPED'?'selected':'' %>>SHIPPED</option>
+                <option <%= o.status==='CANCELLED'?'selected':'' %>>CANCELLED</option>
+              </select>
+              <button class="btn" type="submit">Save</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </table>
+  </div>
+</div>
+</body></html>
