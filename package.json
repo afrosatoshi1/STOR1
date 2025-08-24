@@ -1,24 +1,16 @@
 {
   "name": "neotech-store-blue",
-  "version": "3.1.0",
-  "description": "NeoTech Store - Blue 3D Theme, Admin, Categories, Paystack, Render-ready",
+  "version": "3.1.1",
+  "description": "E-commerce store with Paystack integration, user accounts, categories, and AI recommendations.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "seed": "node seed.js"
-  },
-  "engines": {
-    "node": ">=18.x"
+    "start": "node server.js"
   },
   "dependencies": {
-    "axios": "^1.7.5",
-    "bcrypt": "^5.1.1",
-    "body-parser": "^1.20.2",
-    "connect-sqlite3": "^0.9.0",
-    "dotenv": "^16.4.5",
-    "ejs": "^3.1.10",
     "express": "^4.19.2",
-    "express-session": "^1.17.3",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.6",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3"
   }
 }
