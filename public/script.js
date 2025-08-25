@@ -1,162 +1,175 @@
-/* public/js/script.js
-   Handles:
-   - loading products
-   - add to cart
-   - cart viewing (simple)
-   - login/register modal forms
-   - category filtering & search
-*/
+// ====================== GLOBAL HELPERS ======================
+function $(selector) {
+  return document.querySelector(selector);
+}
+function $all(selector) {
+  return document.querySelectorAll(selector);
+}
 
-const state = {
-  products: [],
-  cart: []
-};
+// Handle modals
+function openModal(id) {
+  document.getElementById(id).style.display = "block";
+}
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
+}
 
-async function loadProducts() {
-  try {
-    const res = await fetch('/api/products');
-    state.products = await res.json();
-    renderProducts(state.products);
-  } catch (err) {
-    console.error('loadProducts error', err);
+// Scroll to products
+function scrollToProducts() {
+  document.querySelector(".product-grid").scrollIntoView({ behavior: "smooth" });
+}
+
+// ====================== AUTH HANDLERS ======================
+async function registerUser(e) {
+  e.preventDefault();
+  const email = e.target.email.value;
+  const password = e.target.password.value;
+
+  const res = await fetch("/api/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    alert("Account created! You can now log in.");
+    closeModal("registerModal");
+    window.location.href = "/login.html";
+  } else {
+    alert(data.error || "Registration failed");
   }
 }
 
-function renderProducts(products) {
-  const grid = document.querySelector('.product-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  products.forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.innerHTML = `
-      <img src="${p.image || '/img/placeholder.png'}" alt="${escapeHtml(p.name)}" />
-      <h3>${escapeHtml(p.name)}</h3>
-      <p class="muted">${escapeHtml(p.description || '')}</p>
-      <div class="price">₦${formatNumber(p.price)}</div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
-        <button class="btn" onclick="addToCart(${p.id})">Add to cart</button>
-        <a class="btn" href="/product/${p.id}" style="text-decoration:none">View</a>
-      </div>
-    `;
-    grid.appendChild(card);
+async function loginUser(e) {
+  e.preventDefault();
+  const email = e.target.email.value;
+  const password = e.target.password.value;
+
+  const res = await fetch("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    alert("Login successful!");
+    localStorage.setItem("user", JSON.stringify(data.user));
+    closeModal("loginModal");
+    window.location.href = "/";
+  } else {
+    alert(data.error || "Login failed");
+  }
+}
+
+function logoutUser() {
+  localStorage.removeItem("user");
+  window.location.href = "/";
+}
+
+// ====================== PRODUCTS ======================
+async function loadProducts() {
+  const grid = document.querySelector(".product-grid");
+  if (!grid) return; // Not on index.html
+
+  try {
+    const res = await fetch("/api/products");
+    const products = await res.json();
+
+    grid.innerHTML = "";
+    products.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "product-card";
+      div.innerHTML = `
+        <img src="${p.image}" alt="${p.name}">
+        <h4>${p.name}</h4>
+        <p>${p.category}</p>
+        <p>$${p.price}</p>
+        <button onclick="addToCart(${p.id}, '${p.name}', ${p.price}, '${p.image}')">Add to Cart</button>
+      `;
+      grid.appendChild(div);
+    });
+  } catch (err) {
+    console.error("Error loading products:", err);
+  }
+}
+
+function filterCategory(category) {
+  const cards = $all(".product-card");
+  cards.forEach(card => {
+    if (category === "all" || card.innerHTML.includes(category)) {
+      card.style.display = "block";
+    } else {
+      card.style.display = "none";
+    }
   });
 }
 
-function escapeHtml(s='') {
-  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+// ====================== CART ======================
+function getCart() {
+  return JSON.parse(localStorage.getItem("cart") || "[]");
 }
-function formatNumber(n){ return Number(n).toLocaleString(); }
-
-// Add to cart (session on server)
-async function addToCart(productId) {
-  try {
-    const res = await fetch('/api/cart', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ productId, qty: 1 })
-    });
-    if (res.ok) {
-      const cart = await res.json();
-      state.cart = cart;
-      alert('Added to cart');
-    } else {
-      const err = await res.json();
-      if (err.error && err.error === 'Not authenticated') {
-        alert('Please login first');
-        openModal('loginModal');
-      } else {
-        alert('Failed to add to cart');
-      }
-    }
-  } catch (e) {
-    console.error('addToCart error', e);
+function saveCart(cart) {
+  localStorage.setItem("cart", JSON.stringify(cart));
+}
+function addToCart(id, name, price, image) {
+  let cart = getCart();
+  let item = cart.find(i => i.id === id);
+  if (item) {
+    item.qty++;
+  } else {
+    cart.push({ id, name, price, image, qty: 1 });
   }
+  saveCart(cart);
+  alert("Added to cart!");
+}
+function renderCart() {
+  const container = $("#cartContainer");
+  if (!container) return; // not on cart.html
+  const cart = getCart();
+
+  container.innerHTML = "";
+  let total = 0;
+
+  cart.forEach((item, i) => {
+    total += item.price * item.qty;
+    const div = document.createElement("div");
+    div.className = "cart-item";
+    div.innerHTML = `
+      <img src="${item.image}" width="50">
+      <span>${item.name}</span>
+      <span>$${item.price}</span>
+      <span>Qty: ${item.qty}</span>
+      <button onclick="removeFromCart(${i})">Remove</button>
+    `;
+    container.appendChild(div);
+  });
+
+  $("#totalPrice").innerText = "$" + total.toFixed(2);
+}
+function removeFromCart(index) {
+  let cart = getCart();
+  cart.splice(index, 1);
+  saveCart(cart);
+  renderCart();
+}
+function goCart() {
+  window.location.href = "/cart.html";
 }
 
-// category filter
-function filterCategory(cat) {
-  if (!cat || cat === 'all') return renderProducts(state.products);
-  const filtered = state.products.filter(p => (p.category||'').toLowerCase().includes(cat.toLowerCase()) || p.name.toLowerCase().includes(cat.toLowerCase()));
-  renderProducts(filtered);
-}
+// ====================== PAGE HOOKS ======================
+document.addEventListener("DOMContentLoaded", () => {
+  // Update footer year
+  if ($("#year")) $("#year").innerText = new Date().getFullYear();
 
-// search
-document.getElementById('searchInput')?.addEventListener('input', (e) => {
-  const q = e.target.value.trim().toLowerCase();
-  if (!q) return renderProducts(state.products);
-  const filtered = state.products.filter(p => p.name.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q));
-  renderProducts(filtered);
+  // Attach forms
+  if ($("#registerForm")) $("#registerForm").addEventListener("submit", registerUser);
+  if ($("#loginForm")) $("#loginForm").addEventListener("submit", loginUser);
+
+  // Load products if on home
+  if ($(".product-grid")) loadProducts();
+
+  // Render cart if on cart page
+  if ($("#cartContainer")) renderCart();
 });
-
-// modals
-function openModal(id){ const m=document.getElementById(id); if(m){ m.style.display='flex'; } }
-function closeModal(id){ const m=document.getElementById(id); if(m){ m.style.display='none'; } }
-
-// login
-document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const email = form.email.value.trim();
-  const password = form.password.value;
-  if (!email || !password) return alert('Enter email & password');
-  try {
-    const res = await fetch('/api/login', {
-      method:'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, password })
-    });
-    if (res.ok) {
-      alert('Login successful');
-      closeModal('loginModal');
-      // reload user state if needed
-    } else {
-      const err = await res.json();
-      alert(err.error || 'Login failed');
-    }
-  } catch (err) {
-    console.error('login error', err);
-  }
-});
-
-// register
-document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const email = form.email.value.trim();
-  const password = form.password.value;
-  if (!email || !password) return alert('Enter email & password');
-  try {
-    const res = await fetch('/api/register', {
-      method:'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, password })
-    });
-    if (res.ok) {
-      alert('Registration successful');
-      closeModal('registerModal');
-    } else {
-      const err = await res.json();
-      alert(err.error || 'Registration failed');
-    }
-  } catch (err) {
-    console.error('register error', err);
-  }
-});
-
-// small helpers
-function goCart(){ window.location.href = '/cart.html' } // if you have cart page, else implement cart modal
-
-// initialization
-document.addEventListener('DOMContentLoaded', () => {
-  loadProducts().catch(()=>{});
-  document.getElementById('year') && (document.getElementById('year').textContent = new Date().getFullYear());
-});
-
-// wrapper to allow top-level await on older environments
-async function loadProducts(){ await loadProductsImpl(); }
-async function loadProductsImpl(){ await loadProductsFetch(); }
-async function loadProductsFetch(){ await (async ()=>{ await fetchProducts(); })(); }
-
-// small compatibility functions to fetch and render (kept backward friendly)
-async function fetchProducts(){ const res = await fetch('/api/products'); state.products = await res.json(); renderProducts(state.products); }
