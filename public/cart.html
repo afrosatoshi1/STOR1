@@ -1,124 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Cart - NeoTech Store</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6fa;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #0047ab;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-    }
-    .cart-container {
-      max-width: 900px;
-      margin: 2rem auto;
-      background: #fff;
-      border-radius: 15px;
-      padding: 2rem;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    }
-    h2 {
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 1.5rem;
-    }
-    th, td {
-      padding: 1rem;
-      border-bottom: 1px solid #ddd;
-      text-align: center;
-    }
-    th {
-      background: #f1f7ff;
-    }
-    .remove-btn {
-      background: red;
-      color: white;
-      border: none;
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .checkout-btn {
-      background: #0073e6;
-      color: #fff;
-      border: none;
-      padding: 0.8rem 2rem;
-      border-radius: 10px;
-      cursor: pointer;
-      display: block;
-      margin: 0 auto;
-      font-size: 1rem;
-      transition: background 0.3s;
-    }
-    .checkout-btn:hover {
-      background: #005bb5;
-    }
-  </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cart - STOR</title>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-  <header>
-    <h1>Your Shopping Cart</h1>
+  <header class="navbar">
+    <div class="logo">STOR</div>
+    <div class="nav-right">
+      <a class="btn small" href="/">🏠 Home</a>
+      <button class="btn small" onclick="logoutUser()">🚪 Logout</button>
+    </div>
   </header>
 
-  <div class="cart-container">
-    <h2>Items in Cart</h2>
-    <table id="cart-table">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>Price</th>
-          <th>Qty</th>
-          <th>Total</th>
-          <th>Remove</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <main class="cart-page">
+    <h2>Your Cart</h2>
+    <div id="cartContainer"></div>
+    <h3>Total: <span id="totalPrice">$0.00</span></h3>
+    <button class="btn">Checkout</button>
+  </main>
 
-    <h3 style="text-align:right;">Grand Total: ₦<span id="grand-total">0</span></h3>
-    <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
-  </div>
+  <footer>
+    <div>© <span id="year"></span> STOR</div>
+  </footer>
 
-  <script>
-async function loadCart() {
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-  try {
-    const res = await fetch("/cart/load");
-    if (res.ok) {
-      const serverCart = await res.json();
-      if (serverCart.length) cart = serverCart;
-    }
-  } catch (err) {
-    console.error("Error loading cart:", err);
-  }
-
-  renderCart(cart);
-}
-
-async function checkout() {
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
-  await fetch("/cart/save", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cart })
-  });
-  alert("Cart saved to account. Checkout flow coming soon!");
-}
-</script>
-
+  <script src="/script.js"></script>
 </body>
 </html>
